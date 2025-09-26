@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz with Joke</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f3f4f6;
+      --text: #1f2937;
+      --radius: 10px;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      margin: 40px 20px;
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 {
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .question {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .options {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .options li {
+      background: var(--bg);
+      margin: 10px 0;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .options li:hover {
+      background: #dbeafe;
+    }
+    .options li.selected {
+      background: #bfdbfe;
+      border-left: 5px solid var(--primary);
+    }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+    }
+    .result {
+      text-align: center;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .joke-section {
+      display: none;
+      background: #fef9c3;
+      border-left: 5px solid #facc15;
+      padding: 15px;
+      border-radius: var(--radius);
+      margin-top: 30px;
+      font-style: italic;
+      text-align: center;
+      color: #78350f;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Interactive Quiz</h1>
+    <div id="quiz">
+      <div class="question" id="question"></div>
+      <ul class="options" id="options"></ul>
+      <button class="btn" id="submitBtn">Next</button>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="joke-section" id="joke"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "1️⃣ Which CSS property controls the text size?",
+        options: ["text-size", "font-style", "font-size", "text-weight"],
+        answer: 2
+      },
+      {
+        question: "2️⃣ Which HTML element defines a paragraph?",
+        options: ["<div>", "<span>", "<p>", "<para>"],
+        answer: 2
+      },
+      {
+        question: "3️⃣ Which JavaScript method is used to log output?",
+        options: ["print()", "console.log()", "log()", "write()"],
+        answer: 1
+      }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultEl = document.getElementById("result");
+    const jokeEl = document.getElementById("joke");
+
+    function loadQuestion() {
+      const current = quizData[currentIndex];
+      questionEl.textContent = current.question;
+      optionsEl.innerHTML = "";
+      current.options.forEach((option, index) => {
+        const li = document.createElement("li");
+        li.textContent = option;
+        li.addEventListener("click", () => selectOption(li, index));
+        optionsEl.appendChild(li);
+      });
+    }
+
+    function selectOption(element, index) {
+      document.querySelectorAll(".options li").forEach(li => li.classList.remove("selected"));
+      element.classList.add("selected");
+      selectedOption = index;
+    }
+
+    submitBtn.addEventListener("click", () => {
+      if (selectedOption === null) return alert("Please select an answer!");
+      if (selectedOption === quizData[currentIndex].answer) score++;
+      selectedOption = null;
+      currentIndex++;
+      if (currentIndex < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      document.getElementById("quiz").style.display = "none";
+      resultEl.textContent = `✅ You scored ${score} out of ${quizData.length}!`;
+      fetchJoke(); // show joke after quiz
+    }
+
+    async function fetchJoke() {
+      try {
+        const res = await fetch("https://official-joke-api.appspot.com/jokes/random");
+        const data = await res.json();
+        jokeEl.textContent = `😂 ${data.setup} — ${data.punchline}`;
+        jokeEl.style.display = "block";
+      } catch (err) {
+        jokeEl.textContent = "😅 Couldn't load a joke!";
+        jokeEl.style.display = "block";
+      }
+    }
+
+    // Initialize
+    loadQuestion();
+  </script>
+</body>
+</html>
